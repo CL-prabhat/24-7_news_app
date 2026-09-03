@@ -1,0 +1,15 @@
+{
+  "name": "ai-news-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Fetches news, summarizes it with Groq AI, and stores it in SQLite for a static, free-hosted frontend.",
+  "type": "commonjs",
+  "scripts": {
+    "fetch": "node scripts/fetch-and-summarize.js"
+  },
+  "dependencies": {
+    "axios": "^1.7.7",
+    "better-sqlite3": "^11.3.0",
+    "rss-parser": "^3.13.0"
+  }
+}

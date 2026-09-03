@@ -1,0 +1,37 @@
+name: Update news database
+
+on:
+  schedule:
+    - cron: '0 * * * *'   # every hour — this runner IS an Ubuntu machine, provided free by GitHub
+  workflow_dispatch: {}    # lets you trigger it manually from the Actions tab
+
+permissions:
+  contents: write
+
+jobs:
+  fetch-and-update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t news-fetcher .
+
+      - name: Run fetch & summarize inside the container
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: |
+          mkdir -p data
+          docker run --rm \
+            -e GROQ_API_KEY="$GROQ_API_KEY" \
+            -v "${{ github.workspace }}/data:/app/data" \
+            news-fetcher
+
+      - name: Commit updated database
+        run: |
+          git config user.name "news-bot"
+          git config user.email "news-bot@users.noreply.github.com"
+          git add data/news.sqlite
+          git diff --cached --quiet || git commit -m "Auto-update news: $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git push
